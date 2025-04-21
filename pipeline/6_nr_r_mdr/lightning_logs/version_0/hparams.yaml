@@ -1,0 +1,11 @@
+hidden_dim: 256
+input_dim: 2304
+lr: 0.001
+task_names:
+- label_h37rv
+- label_resistant
+- label_mdr
+task_weights:
+  label_h37rv: 0.031140188496430892
+  label_mdr: 0.2792077820423922
+  label_resistant: 0.6896520294611769

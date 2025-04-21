@@ -1,0 +1,357 @@
+For the following assay_description, extract the following structured metadata fields according to the logic below. All outputs must be lowercase strings unless otherwise stated.
+
+---
+
+Fields & Instructions:
+
+mtb_strain:
+- If the text mentions a specific strain of *Mycobacterium tuberculosis*, return the full strain reference as it appears, preserving both strain names and catalog identifiers when combined.
+  - Examples:
+    - "H37Rv ATCC 27294" → return "H37Rv ATCC 27294"
+    - "Mycobacterium tuberculosis H37Rv isolate BK12" → return "H37Rv isolate BK12"
+    - "Mycobacterium tuberculosis ATCC 35837" → return "ATCC 35837"
+    - "H37Rv" → return "H37Rv"
+- If only the species name *Mycobacterium tuberculosis* is mentioned, return: "mycobacterium tuberculosis"
+- If nothing related to strain or species is found, return: false
+
+mentions_resistance:
+- If the text does not mention resistance, return: false
+- If it mentions extensively drug-resistant, return: "xdr"
+- If it mentions multi-drug-resistant or multidrug-resistant, return: "mdr"
+- If it mentions both resistant/extensively drug resistant, return: "mdr/xdr"
+- If it mentions any other form of resistance (e.g., "isoniazid-resistant", "resistant to rifampin"), return: "R"
+
+resistant_to:
+- If the assay description mentions resistance to specific drug or drugs, return the drug names in lowercase, comma-separated (e.g., "rifampin, isoniazid")
+- If multidrug resistance is mentioned (e.g., "multidrug-resistant") but no specific drugs are listed, return: "MDR"
+- If resistance is not mentioned, return: false
+
+mutant:
+- If a mutant strain or engineered variant is mentioned (e.g., with plasmid, gene overexpression, or point mutation), return: true
+- Otherwise, return: false
+
+mutant_type:
+- If a mutation or construct is specified (e.g., "katG S315T", "pMV261::InhA", "pFCA-lux AB"), return it as-is
+- If not found, return: false
+
+checkerboard:
+- If the text mentions a checkerboard assay, return: true
+- Otherwise, return: false
+
+---
+
+All boolean values (`true`/`false`) must be lowercase. Strings must also be lowercase.
+
+---
+
+Examples:
+
+# Example 1
+assay_description: "Antimycobacterial activity against multi-drug-resistant Mycobacterium tuberculosis by agar dilution method."
+mtb_strain: "mycobacterium tuberculosis"  
+mentions_resistance: "mdr" 
+resistant_to: false  
+mutant: false  
+mutant_type: false  
+checkerboard: false  
+
+# Example 2
+assay_description: "Antitubercular activity against rifampin, isoniazid, kanamycin and ofloxacin-resistant Mycobacterium tuberculosis assessed as inhibition of bacterial growth after 4 weeks by two-fold dilution technique"
+mtb_strain: "mycobacterium tuberculosis"  
+mentions_resistance: "R"  
+resistant_to: "rifampin, isoniazid, kanamycin, ofloxacin" 
+mutant: false  
+mutant_type: false  
+checkerboard: false  
+
+# Example 3
+assay_description: "In vitro anti-mycobacterial activity against ethambutol resistant Mycobacterium tuberculosis ATCC 35837 determined by the MTT method"
+mtb_strain: "ATCC 35837"
+mentions_resistance: "R"
+resistant_to: "ethambutol"
+mutant: false
+mutant_type: false
+checkerboard: false
+
+# Example 4
+assay_description: "In vitro antimicrobacterial activity to inhibit 90% of Mycobacterium tuberculosis H37Rv (Rifampin and Isoniazid susceptible ATCC 27294 strain), relative to that of controls"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 5
+assay_description: "Antitubercular activity against non replicating persistent form of Mycobacterium tuberculosis H37Rv ATCC 27294 after 10 days by LORA"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 6
+assay_description: "Antitubercular activity against Mycobacterium tuberculosis H37Rv ATCC27294 assessed as complete cessation of growth"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 7
+assay_description: "Antibacterial activity against multidrug-resistant Mycobacterium tuberculosis H37Rv ATCC 27294 after 28 days by agar dilution method"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: "mdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 8
+assay_description: "Antitubercular activity against isoniazid-resistant Mycobacterium tuberculosis H37RV clinical isolate 1 assessed as growth inhibition by microdilution method"
+mtb_strain: "H37Rv clinical isolate 1"
+mentions_resistance: "R"
+resistant_to: "isoniazid"
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 9
+assay_description: "Growth inhibition of Mycobacterium tuberculosis H37Rv MTCC 200 at 40 ug/ml after 28 days by Lowenstein-Jensen method"
+mtb_strain: "H37Rv MTCC 200"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 10
+assay_description: "Antimicrobial activity against Mycobacterium tuberculosis H37Rv SRI 1345 infected in mouse J774 cells assessed as intracellular growth inhibition at 10-fold below MIC after 7 days relative to control"
+mtb_strain: "H37Rv SRI 1345"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 11
+assay_description: "Antimycobacterial activity against Mycobacterium tuberculosis H37Rv CNCTC My 331/88 after 14 days by microdilution method"
+mtb_strain: "H37Rv CNCTC My 331/88"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 12
+assay_description: "Antibacterial activity against Mycobacterium tuberculosis H37Rv ATCC 27294T assessed as rifampin MIC at 8 ug/ml after 7 days by microdilution checkerboard assay"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: true
+
+#Example 13
+assay_description: "Antimicrobial activity against Mycobacterium tuberculosis H37Rv isolate LV13 expressing ATP synthase atpE I66M mutant protein by 7H9 broth dilution method"
+mtb_strain: "H37Rv isolate LV13"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "ATP synthase atpE I66M"
+checkerboard: false
+
+#Example 14
+assay_description: "Ratio of MIC for isoniazid resistant Mycobacterium tuberculosis H37Rv clinical isolate 5 harboring katG S315T mutant to MIC for Mycobacterium tuberculosis H37Rv"
+mtb_strain: "H37Rv clinical isolate 5"
+mentions_resistance: "R"
+resistant_to: "isoniazid"
+mutant: true
+mutant_type: "katG S315T"
+checkerboard: false
+
+#Example 15
+assay_description: "Ratio of MIC for PA-824 to compound MIC for Mycobacterium tuberculosis H37Rv ATCC 27294 harboring pFCA-lux AB gene measured under aerobic condition after 8 days by luminescence analysis"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "pFCA-lux AB"
+checkerboard: false
+
+#Example 16
+assay_description: "Ratio of MIC for Mycobacterium tuberculosis H37RV harboring pMV261::InhA plasmid to MIC for wild-type Mycobacterium tuberculosis H37Rv"
+mtb_strain: "H37Rv"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "pMV261::InhA"
+checkerboard: false
+
+#Example 17
+assay_description: "Antimicrobial activity against Mycobacterium tuberculosis H37Rv ATCC 27294 harboring DprE1 Y314H mutant assessed as growth inhibition after 5 days by microdilution method"
+mtb_strain: "H37Rv ATCC 27294"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "DprE1 Y314H"
+checkerboard: false
+
+#Example 18
+assay_description: "Antitubercular activity against 1-ethyl-3-(6-(pyrimidin-5-yl)-5-((tetrahydrofuran-3-yl)methoxy)thiazolo[5,4-b]pyridin-2-yl)urea-resistant Mycobacterium tuberculosis H37Rv clone 8.1 harboring DNA gyraseB ATP domain Ala92Ser mutant assessed as growth inhibition by standard microdilution method"
+mtb_strain: "H37Rv clone 8.1"
+mentions_resistance: "R"
+resistant_to: "1-ethyl-3-(6-(pyrimidin-5-yl)-5-((tetrahydrofuran-3-yl)methoxy)thiazolo[5,4-b]pyridin-2-yl)urea"
+mutant: true
+mutant_type: "DNA gyraseB ATP domain Ala92Ser"
+checkerboard: false
+
+#Example 19
+assay_description: "Antimycobacterial activity against isoniazid resistant Mycobacterium tuberculosis H37Rv clinical isolate 4 harboring katG S315T mutant"
+mtb_strain: "H37Rv clinical isolate 4"
+mentions_resistance: "R"
+resistant_to: "isoniazid"
+mutant: true
+mutant_type: "katG S315T"
+checkerboard: false
+
+#Example 20
+assay_description: "Antimicrobial activity against Mycobacterium tuberculosis H37Rv isolate BK12 expressing ATP synthase atpE A63P mutant protein by 7H9 broth dilution method"
+mtb_strain: "H37Rv isolate BK12"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "ATP synthase atpE A63P"
+checkerboard: false
+
+#Example 21
+assay_description: "Antimycobacterial activity against Mycobacterium tuberculosis H37Rv CNCTC My 331/88 after 5 days by microplate alamar blue assay"
+mtb_strain: "H37Rv CNCTC My 331/88"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 22
+assay_description: "GSK_TB: Inhibition of the intracellular growth of Mycobacterium tuberculosis (pXC50)"
+mtb_strain: "mycobacterium tuberculosis"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 23
+assay_description: "Antimycobacterial activity against Mycobacterium tuberculosis H37Rv expressing pFCA-luxAB after 10 days by luminescence-based low-oxygen recovery assay"
+mtb_strain: "H37Rv"
+mentions_resistance: false
+resistant_to: false
+mutant: true
+mutant_type: "pFCA-luxAB"
+checkerboard: false
+
+#Example 24
+assay_description: "Antitubercular activity against Mycobacterium tuberculosis H37Rv after 21 days by Lowenstein-Jensen method"
+mtb_strain: "H37Rv"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 25
+assay_description: "Antimycobacterial activity against Mycobacterium tuberculosis H37Rv isolate WC 51/02"
+mtb_strain: "H37Rv isolate WC 51/02"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 26
+assay_description: "Antimicrobial activity against Mycobacterium tuberculosis H37Rv in GASTD medium after 10 days by spectrophotometric analysis"
+mtb_strain: "H37Rv"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 27
+assay_description: "Antimycobacterial activity against extensively drug resistant Mycobacterium tuberculosis Praha 131 after 21 days by micromethod"
+mtb_strain: "Praha 131"
+mentions_resistance: "xdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 28
+assay_description: "Antimycobacterial activity against clinical isolates of multidrug resistant/extensively drug resistant Mycobacterium tuberculosis Praha 131 after 21 days by micromethod"
+mtb_strain: "Praha 131"
+mentions_resistance: "mdr/xdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 29
+assay_description: "Antitubercular activity against extensively drug resistant Mycobacterium tuberculosis clinical isolate 8 by resazurin microtitre assay"
+mtb_strain: "clinical isolate 8"
+mentions_resistance: "xdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 30
+assay_description: "Antimycobacterial activity against multidrug-resistant Mycobacterium tuberculosis isolate 9449/06 after 14 days by micromethod"
+mtb_strain: "isolate 9449/06"
+mentions_resistance: "mdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 31
+assay_description: "Antibacterial activity against drug-resistant Mycobacterium tuberculosis 164 by microbroth dilution method"
+mtb_strain: "164"
+mentions_resistance: "R"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 32
+assay_description: "Antimycobacterial activity against clinical isolates of multidrug resistant/extensively drug resistant Mycobacterium tuberculosis 9449/2007 after 14 days by micromethod"
+mtb_strain: "9449/2007"
+mentions_resistance: "mdr/xdr"
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+#Example 33
+assay_description: "Compound was evaluated for the synergistic effect in combination with isoniazid for the inhibition of Mycobacterium tuberculosis H 37 Ra, using middlebrook 7H9 medium (liquid)"
+mtb_strain: "H37Ra"
+mentions_resistance: false
+resistant_to: false
+mutant: false
+mutant_type: false
+checkerboard: false
+
+Example 34
+assay_description: "Antituberculosis activity against isoniazid-resistant Mycobacterium tuberculosis isolate B"
+mtb_strain: "isolate B"
+mentions_resistance: "R"
+resistant_to: "isoniazid"
+mutant: false
+mutant_type: false
+checkerboard: false
+{format_instructions}
+
+
+assay_description: {assay_description}
