@@ -13,5 +13,6 @@ models/
 
 # Large files to ignore
 data/**/kpgt_embeddings_cache.pkl
+data/**/kpgt_embeddings.pkl
 data/**/multitask_dataset.pkl
 data/chemblapi/full/CHEMBL360.csv
