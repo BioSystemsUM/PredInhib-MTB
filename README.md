@@ -8,7 +8,7 @@ This repository supports two key tasks:
 1. **MIC Regression** using curated, biologically meaningful datasets.
 2. **Multi-task Classification** of compound activity across different resistance profiles (Non-Resistant, Resistant, MDR).
 
-We use LLMs to extract structured metadata from free-text assay descriptions (e.g., from ChEMBL), enabling biologically consistent dataset construction and improved model performance.
+We use LLMs to extract structured metadata from free-text assay descriptions from ChEMBL, enabling biologically consistent dataset construction and improved model performance.
 
 ## 📁 Repository Structure
 
