@@ -11,14 +11,17 @@ from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from typing import Union
 
+import os
+
 # --- Config ---
-data_path = "/home/malves/predinhib_mtb/data/"
-descriptions_path = data_path + "llama/unique_assay_descriptions.csv"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
+data_path = os.path.join(REPO_ROOT, "data")
 
-prompt_template_path = data_path + "llama/prompt_template.txt"
-
-save_descriptions_path = data_path + "llama/processed_assay_descriptions.pkl"
-save_description_csv_path = data_path + "llama/processed_assay_descriptions.csv"
+descriptions_path = os.path.join(data_path, "llama", "unique_assay_descriptions.csv")
+prompt_template_path = os.path.join(data_path, "llama", "prompt_template.txt")
+save_descriptions_path = os.path.join(data_path, "llama", "processed_assay_descriptions.pkl")
+save_description_csv_path = os.path.join(data_path, "llama", "processed_assay_descriptions.csv")
 
 
 # --- Seeds ---

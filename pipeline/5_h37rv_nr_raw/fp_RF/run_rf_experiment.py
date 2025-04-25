@@ -10,8 +10,10 @@ from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
 from time import time
 from tqdm import tqdm
 
-BASE_DIR = "/home/malves/predinhib_mtb"
-FOLD_ROOT_BASE = os.path.join(BASE_DIR, "data/cv/raw_h37rv_nr/folds")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
+FOLD_ROOT_BASE = os.path.join(BASE_DIR, "data", "cv", "raw_h37rv_nr", "folds")
+
 FP_CACHE_TEMPLATE = os.path.join(FOLD_ROOT_BASE, "{dataset}/fingerprint_cache.pkl")
 OUTPUT_BASE = os.path.join(BASE_DIR, "results/rf_preds/{dataset}")
 

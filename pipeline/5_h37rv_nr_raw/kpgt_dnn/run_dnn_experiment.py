@@ -12,11 +12,14 @@ import torch
 import gc
 
 
+# Get repo root (3 levels up from this script)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
+
 # Paths
-BASE_DIR = "/home/malves/predinhib_mtb"
-FOLD_ROOT_BASE = os.path.join(BASE_DIR, "data/cv/raw_h37rv_nr/folds")
-FP_CACHE_TEMPLATE = os.path.join(FOLD_ROOT_BASE, "{dataset}/kpgt_embeddings_cache.pkl")
-OUTPUT_BASE = os.path.join(BASE_DIR, "results/dnn_preds/{dataset}")
+FOLD_ROOT_BASE = os.path.join(BASE_DIR, "data", "cv", "raw_h37rv_nr", "folds")
+FP_CACHE_TEMPLATE = os.path.join(FOLD_ROOT_BASE, "{dataset}", "kpgt_embeddings_cache.pkl")
+OUTPUT_BASE = os.path.join(BASE_DIR, "results", "dnn_preds", "{dataset}")
 
 
 # Load KPGT embedding cache
@@ -116,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", type=str, required=True, choices=["raw", "h37rv", "nr"])
     parser.add_argument("--n_repeats", type=int, default=5)
     parser.add_argument("--n_folds", type=int, default=5)
-    parser.add_argument("--gpu", type=int, default=6)
+    parser.add_argument("--gpu", type=int, default=0)
     args = parser.parse_args()
 
     run_dl_experiment(args.dataset_name, args.n_repeats, args.n_folds, gpu_id=args.gpu)

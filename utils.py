@@ -88,63 +88,90 @@ def convert_to_uM(df, column='rdkit_smiles'):
     return uM_values
 
 
+import os
+import subprocess
+import datetime
+import pandas as pd
+import numpy as np
+import pickle
+from pathlib import Path
 
 # ──────────────────────────────────────────────────────────────
-# Unique folder generator for temporary dataset directories
+# Unique folder generator
 def unique_dir_name():
-    now = datetime.datetime.now()
-    return str(now.strftime("%d-%m-%Y_%H-%M-%S"))
+    return datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
 # ──────────────────────────────────────────────────────────────
 # KPGT embedding function (replaces RDKit fingerprinting)
-def smiles_to_embeddings(smiles, gpu):
+def smiles_to_embeddings(smiles, gpu, kpgt_root, env_python, model_path, config="base"):
     folder = unique_dir_name()
-    dataset_path = f'/home/malves/predator/KPGT/datasets/{folder}/'
-    os.makedirs(dataset_path)
+    datasets_dir = Path(kpgt_root) / "datasets"
+    dataset_path = datasets_dir / folder
+    dataset_path.mkdir(parents=True, exist_ok=True)
 
-    df = pd.DataFrame({'Class': [0]*len(smiles), 'smiles': smiles})
-    df.to_csv(f'{dataset_path}{folder}.csv', index=False)
+    df = pd.DataFrame({"Class": [0] * len(smiles), "smiles": smiles})
+    csv_path = dataset_path / f"{folder}.csv"
+    df.to_csv(csv_path, index=False)
 
-    original_path = os.getcwd()
-    script_path = '/home/malves/predator/KPGT/scripts/preprocess_downstream_dataset.py'
-    os.chdir(os.path.dirname(script_path))
+    # Change to KPGT script dir
+    original_path = Path.cwd()
+    script_dir = Path(kpgt_root) / "scripts"
+    os.chdir(script_dir)
 
     try:
+        # Run preprocessing
         subprocess.run([
-            '/home/malves/miniconda3/envs/KPGT/bin/python', script_path,
-            '--data_path', '/home/malves/predator/KPGT/datasets',
-            '--dataset', folder
-        ])
-        print('🧠 Extracting features...')
+            env_python,
+            str(script_dir / "preprocess_downstream_dataset.py"),
+            "--data_path", str(datasets_dir),
+            "--dataset", folder
+        ], check=True)
+
+        print("🧠 Extracting features...")
+
+        # Run feature extraction
         subprocess.run([
-            '/home/malves/miniconda3/envs/KPGT/bin/python',
-            '/home/malves/predator/KPGT/scripts/extract_features.py',
-            '--config', 'base',
-            '--model_path', '/home/malves/predator/KPGT/models/pretrained/base/base.pth',
-            '--data_path', '/home/malves/predator/KPGT/datasets/',
-            '--gpu', str(gpu),
-            '--dataset', folder
-        ])
+            env_python,
+            str(script_dir / "extract_features.py"),
+            "--config", config,
+            "--model_path", str(model_path),
+            "--data_path", str(datasets_dir),
+            "--gpu", str(gpu),
+            "--dataset", folder
+        ], check=True)
+
     finally:
         os.chdir(original_path)
 
-    data = np.load(f'{dataset_path}/kpgt_base.npz')
-    fps_array = data['fps']
+    # Load embeddings
+    npz_path = dataset_path / "kpgt_base.npz"
+    data = np.load(npz_path)
+    fps_array = data["fps"]
 
-    os.system(f'rm -r {dataset_path}')
+    # Cleanup
+    import shutil
+    shutil.rmtree(dataset_path)
+
     return fps_array
 
 # ──────────────────────────────────────────────────────────────
 # Main embedding computation for a dataset split
-def compute_kpgt_embeddings_for_dataset(csv_paths, output_fp_cache_path, gpu=6):
+def compute_kpgt_embeddings_for_dataset(csv_paths, output_fp_cache_path, gpu, kpgt_root, env_python, model_path):
     all_smiles = set()
     for path in csv_paths:
         df = pd.read_csv(path)
         all_smiles.update(df["smiles"])
-    all_smiles = sorted(list(all_smiles))  # order for stable mapping
+    all_smiles = sorted(all_smiles)  # deterministic
 
     print(f"🧬 Total unique SMILES: {len(all_smiles)}")
-    fps_array = smiles_to_embeddings(all_smiles, gpu=gpu)
+    fps_array = smiles_to_embeddings(
+        all_smiles,
+        gpu=gpu,
+        kpgt_root=kpgt_root,
+        env_python=env_python,
+        model_path=model_path
+    )
+
     smiles_to_fp = {smi: fps_array[i] for i, smi in enumerate(all_smiles)}
 
     with open(output_fp_cache_path, "wb") as f:

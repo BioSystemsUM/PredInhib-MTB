@@ -1,59 +1,59 @@
 # PREDINHIB_MTB
 
-**PREDINHIB_MTB** is a machine learning pipeline designed to predict compound inhibition and MIC values against *Mycobacterium tuberculosis* (M. tuberculosis), leveraging curated assay descriptions using LLMs.
+**PREDINHIB_MTB** is a machine learning pipeline for predicting compound inhibition and MIC values against *Mycobacterium tuberculosis* (M. tuberculosis), leveraging curated assay descriptions processed through Large Language Models (LLMs).
 
 ## 🔍 Overview
 
 This repository supports two key tasks:
-1. **MIC regression** using curated, biologically meaningful datasets.
-2. **Multi-task classification** of compound activity across varying resistance profiles (Non-Resistant, Resistant, MDR).
+1. **MIC Regression** using curated, biologically meaningful datasets.
+2. **Multi-task Classification** of compound activity across different resistance profiles (Non-Resistant, Resistant, MDR).
 
-We utilize Large Language Models (LLMs) to extract structured metadata from free-text assay descriptions in ChEMBL, enabling biologically consistent dataset construction and improved model performance.
+We use LLMs to extract structured metadata from free-text assay descriptions (e.g., from ChEMBL), enabling biologically consistent dataset construction and improved model performance.
 
 ## 📁 Repository Structure
 
 ```
 .
 ├── data/
-│   └── chemblapi/                          # ChEBML data downloaded for Mycobacterium tuberculosis
-│   └── cv/                                 # Data required for repeated 5x5 CV (including folds)
-│   └── llama/                              # Input and Output data of Llama processing
-│   └── res_mdr_xdr/                        # Data for multi-task classification (NR, R, MDR)
-|
-├── figures                                 # Figures and plots generated during analysis
-|
-├── models/                                 # Trained model checkpoints and configs
-|
-├── pipeline/                          
-│   └── 0_chembl_download.ipynb             # Data retrieval from ChEMBL
-│   └── 1_data_exploration.ipynb            # Dataset inspection
-│   └── 2_data_cleaning.ipynb               # Dataset filtering
-│   └── 3_llama_processing/                 
-│       └── 3_llama_processing              # Python Script to get metadata from descriptions using Llama3.3
-│   └── 4_data_splitting/              
-│       └── 4_1_llama_results_exploration.ipynb           # Exploration of LLama metadata extraction
-│       └── 4_2_ml_preparation.ipynb        # preprocessing, and datasets creation for single-task
-│   └── 5_h37rv_nr_raw/
-│       └── 5_0_folds_creation.ipynb        # Stratified fold generation for cross-validation
-│       └── fingerprints.ipynb              # Morgan fingerprints generation
-│       └── kpgt_embeddings.ipynb           # KPGT embeddings generation
-│       └── 5_2_kpgt_embeddings.ipynb       # KPGT embeddings generation
-│       └── fp_RF/run_all_rf.sh             # Random Forest training and evaluation
-│       └── fp_SVR/run_all_svr.sh           # SVR training and evaluation
-│       └── fp_DNN/run_all_dnn.sh           # DNN training and evaluation
-|
+│   ├── chemblapi/           # ChEMBL data for Mycobacterium tuberculosis
+│   ├── cv/                  # Repeated 5x5 cross-validation folds
+│   ├── llama/               # Llama3.3 input/output
+│   └── res_mdr_xdr/         # Data for multi-task classification
+│
+├── figures/                 # Generated plots and figures
+│
+├── models/                  # Trained models and configuration files
+│
+├── pipeline/
+│   ├── 0_chembl_download.ipynb         # Download data from ChEMBL
+│   ├── 1_data_exploration.ipynb        # Initial dataset inspection
+│   ├── 2_data_cleaning.ipynb           # Filtering and cleaning
+│   ├── 3_llama_processing/
+│   │   └── 3_llama_processing.py       # Llama3.3 metadata extraction
+│   ├── 4_data_splitting/
+│   │   ├── 4_1_llama_results_exploration.ipynb  # Metadata exploration
+│   │   └── 4_2_ml_preparation.ipynb             # ML dataset preparation
+│   ├── 5_h37rv_nr_raw/
+│   │   ├── 5_0_folds_creation.ipynb             # Stratified fold generation
+│   │   ├── fingerprints.ipynb                   # Morgan fingerprint generation
+│   │   ├── kpgt_embeddings.ipynb                # KPGT embedding generation
+│   │   ├── 5_2_kpgt_embeddings.ipynb             # Alternative KPGT generation
+│   │   ├── fp_RF/run_all_rf.sh                   # Random Forest training
+│   │   ├── fp_SVR/run_all_svr.sh                  # SVR training
+│   │   └── fp_DNN/run_all_dnn.sh                  # DNN training
 │   └── 6_multitask/
-│       └── data_curation.ipynb             # Data curation for multi-task classification                     
-│       └── model_run.ipynb                 # Multi-task model training and evaluation 
-│       └── multitask_test_set.csv          # Test set for multi-task classification
-├── results/                           # Model outputs from repeated 5x5 CV
-├── utils.py                           # Utility functions
-└── predinhib_env.yml                  # Conda environment specification
+│       ├── data_curation.ipynb                  # Multi-task dataset curation
+│       ├── model_run.ipynb                      # Multi-task training/evaluation
+│       └── multitask_test_set.csv               # Test set for classification
+│
+├── results/                    # Model predictions and CV results
+├── utils.py                     # Utility functions
+└── predinhib_env.yml            # Conda environment file
 ```
 
 ## 🧪 How to Reproduce
 
-### 1. Setup
+### 1. Environment Setup
 
 ```bash
 conda env create -f predinhib_env.yml
@@ -62,60 +62,66 @@ conda activate predinhib
 
 ### 2. Data Preparation
 
-Follow these notebooks in order to get the most recent data (not applicable to reproducibility):
+(Optional) Download and process the latest ChEMBL data:
 1. `0_chembl_download.ipynb`
 2. `1_data_exploration.ipynb`
 3. `2_data_cleaning.ipynb`
 
-### 3. Assay Metadata Extraction
+*Note: This step is not needed for pure reproducibility of current results.*
 
-Use `3_llama_processing/3_llama_processing.py` to extract structured metadata (e.g., strain, resistance, mutant type) using LLaMA3.3 via LangChain and Ollama.
+### 3. Assay Metadata Extraction (LLaMA)
 
-We recomment using the docker/podman version: 
+Run `3_llama_processing/3_llama_processing.py` to extract structured metadata (strain, resistance, mutant type) from assay descriptions.
+
+We recommend running Ollama inside a container for GPU acceleration:
+
 ```bash
-docker pull ollama/ollama
+podman pull ollama
+podman run -d --name ollama_cuda --privileged --gpus all -v ollama_data:/root/.ollama -p 11434:11434 docker.io/ollama/ollama
+podman exec -it ollama bash
+ollama pull llama3.3
+exit
 ```
 
-### 4. Llama Results Exploration
+### 4. Metadata Exploration and Dataset Preparation
 
-Use `4_data_splitting/4_1_llama_results_exploration.ipynb` to explore the metadata extracted by LLaMA.
+- Explore extracted metadata: `4_data_splitting/4_1_llama_results_exploration.ipynb`
+- Prepare datasets for ML: `4_data_splitting/4_2_ml_preparation.ipynb`
 
-Use `4_data_splitting/4_2_ml_preparation.ipynb` to prepare the data for ML tasks.
+### 5. Single-task Model Training and Evaluation
 
-### 5. Model Training for single-task and Evaluation
-Stratified fold generation for cross-validation:
+- Generate folds: `5_h37rv_nr_raw/5_0_folds_creation.ipynb`
+- Generate fingerprints: `5_h37rv_nr_raw/fingerprints.ipynb`
+- Generate KPGT embeddings: `5_h37rv_nr_raw/kpgt_embeddings.ipynb` or `5_2_kpgt_embeddings.ipynb`
 
-`5_0_folds_creation.ipynb`
+**Note on KPGT embeddings**:  
+Clone [KPGT](https://github.com/lihan97/KPGT.git), install its environment, and download its pre-trained model from [figshare](https://figshare.com/s/d488f30c23946cf6898f?file=35369662).  
+Update the paths to the KPGT repository, model, and environment as needed.
 
-Generate fingerprints and KPGT embeddings using: 
+- Train and evaluate models using the bash scripts:
+  - `run_all_rf.sh` (Random Forest)
+  - `run_all_svr.sh` (SVR)
+  - `run_all_dnn.sh` (DNN)
 
-`5_1_fingerprints.ipynb` and `5_2_kpgt_embeddings.ipynb`, respectively.
+### 6. Multi-task Model Training and Evaluation
 
-(for KPGT embeddings, please clone https://github.com/lihan97/KPGT.git ans intall its environment)
+Train and evaluate multi-task models using:
+- `6_multitask/model_run.ipynb`
 
-Use `run_all_*model*.sh` scripts to train and evaluate models. The scripts are designed to be run in a bash shell.
+This focuses on classifying compounds into Non-Resistant, Resistant, and MDR categories.
 
-- MIC prediction (regression)
+## 📊 Models and Benchmarks
 
-### 6. Model Training for multi-task and Evaluation
+We benchmark:
+- **Random Forest** (Morgan fingerprints)
+- **SVR** (KPGT embeddings)
+- **DNN** (KPGT embeddings, best performance)
 
-Use `6_/multitask/model_run.ipynb` to train and evaluate models. .
-
-- Resistance profile classification (multi-task)
-
-## 📊 Benchmarks and Models
-
-We evaluate:
-- **Random Forest (Morgan fingerprints)**
-- **SVR + KPGT embeddings**
-- **DNN + KPGT embeddings (best performer)**
-
-Tasks:
-- MIC regression (R² up to 0.65, MAE 0.41)
-- Multi-task binary classification (Non-Resistant, Resistant, MDR)
-
-Post-hoc classification threshold: **10 µM**
+Task performance:
+- MIC regression: **R² up to 0.65**, **MAE ≈ 0.41**
+- Resistance classification (multi-task): Non-Resistant / Resistant / MDR **F1 scores of 0.84, 0.81, and 0.67, respectively**.
+    Classification threshold: **10 µM**
 
 ## 📬 Contact
 
-For questions, contact **Nuno Alves** via GitHub or email: `id10075@alunos.uminho.pt`.
+For questions or feedback, contact **Nuno Alves** via GitHub or email: `id10075@alunos.uminho.pt`.
