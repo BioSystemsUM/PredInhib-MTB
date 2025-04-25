@@ -125,3 +125,7 @@ Task performance:
 ## 📬 Contact
 
 For questions or feedback, contact **Nuno Alves** via GitHub or email: `id10075@alunos.uminho.pt`.
+
+🔒 License
+
+This project is licensed under the MIT License.
